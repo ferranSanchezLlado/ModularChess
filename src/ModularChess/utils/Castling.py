@@ -16,10 +16,9 @@ class CastlablePiece(Piece, metaclass=abc.ABCMeta):
     def __init__(self, board: "Board", player: Player, starting_position: Position,
                  castlable_pieces: Optional[List[Type["CastlablePiece"]]] = None):
         super().__init__(board, player, starting_position)
-        self.castlable_pieces: List[Type["CastlablePiece"]] = castlable_pieces or [piece_type for piece_type in
-                                                                                   board.pieces[player].keys() if
-                                                                                   issubclass(piece_type,
-                                                                                              CastlablePiece)]
+        self.castlable_pieces: List[Type["CastlablePiece"]] = castlable_pieces or \
+                                                              [piece_type for piece_type in board.pieces[player].keys()
+                                                               if issubclass(piece_type, CastlablePiece)]
 
     def get_possible_castlable_pieces(self) -> List["CastlablePiece"]:
         return [cast(CastlablePiece, piece) for piece_type in self.castlable_pieces for piece in
