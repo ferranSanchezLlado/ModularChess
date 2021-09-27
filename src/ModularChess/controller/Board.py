@@ -4,9 +4,9 @@ from typing import Type, Optional, cast, Dict, List
 
 import numpy as np
 
-from src.ModularChess.pieces.Piece import Piece
-from src.ModularChess.controller.Player import Player
-from src.ModularChess.utils.Position import Position
+from ModularChess.controller.Player import Player
+from ModularChess.pieces.Piece import Piece
+from ModularChess.utils.Position import Position
 
 
 class Board:
@@ -30,7 +30,7 @@ class Board:
 
     def __str__(self) -> str:
         # Flips all axis excluding y, making the point 0 to be the lower left corner
-        return str(np.flip(self.board, axis=[i for i in range(self.dimensions) if i != 1]))
+        return str(np.flip(self.board, axis=[i for i in range(self.dimensions) if i != 1])).replace("None", "□")
 
     def add_piece(self, piece: Piece) -> None:
         self.board[tuple(piece.position)] = piece
@@ -51,8 +51,8 @@ class Board:
         piece.n_moves += 1
         piece.position = new_position
 
-    def can_enemy_capture(self, position: Position, allied_players: list[Player]) -> bool:
-        for player in list(player for player in self.pieces.keys() if player not in allied_players):
+    def can_enemy_piece_capture(self, position: Position, player: Player) -> bool:
+        for player in player.get_enemies(self.pieces.keys()):
             for pieces in self.pieces[player].values():
                 for piece in pieces:
                     if piece.check_move(position):
@@ -60,18 +60,15 @@ class Board:
         return False
 
     def can_capture_or_move(self, piece: Piece, new_position: Position) -> bool:
-        enemy_players = list(player for player in self.pieces.keys() if player not in piece.player.get_allies())
         destination = self[new_position]
-        # TODO: use player method
-        return destination is None or destination.player in enemy_players
+        return destination is None or piece.player.can_capture(destination.player)
 
-    def is_there_an_enemy_piece(self, piece: Piece, new_position: Position) -> bool:
-        enemy_players = list(player for player in self.pieces.keys() if player not in piece.player.get_allies())
+    def is_an_enemy_piece(self, piece: Piece, new_position: Position) -> bool:
         destination = self[new_position]
-        return destination is not None and destination.player in enemy_players
+        return destination is not None and piece.player.can_capture(destination.player)
 
     def is_position_outside(self, position: Position) -> bool:
         return bool(np.any((position < 0) | (position >= self.size))) and position.shape[0] == self.dimensions
 
     def is_position_inside(self, position: Position) -> bool:
-        return bool(np.any((position >= 0) | (position < self.size))) and position.shape[0] == self.dimensions
+        return bool(np.any((position >= 0) & (position < self.size))) and position.shape[0] == self.dimensions

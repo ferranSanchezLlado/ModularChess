@@ -3,29 +3,36 @@ from typing import Optional, List, Tuple
 
 import numpy as np
 
-from src.ModularChess.GameModes.GameMode import GameState, GameMode
-from src.ModularChess.controller.Board import Board
-from src.ModularChess.controller.Player import Player
-from src.ModularChess.pieces.Bishop import Bishop
-from src.ModularChess.pieces.King import King
-from src.ModularChess.pieces.Knight import Knight
-from src.ModularChess.pieces.Pawn import Pawn
-from src.ModularChess.pieces.Queen import Queen
-from src.ModularChess.pieces.Rook import Rook
-from src.ModularChess.utils.BasicMovement import BasicMovement
-from src.ModularChess.utils.Movement import Movement
-from src.ModularChess.utils.Position import Position
+from ModularChess.GameModes.GameMode import GameState, GameMode
+from ModularChess.controller.Board import Board
+from ModularChess.controller.Player import Player
+from ModularChess.pieces.Bishop import Bishop
+from ModularChess.pieces.King import King
+from ModularChess.pieces.Knight import Knight
+from ModularChess.pieces.Pawn import Pawn
+from ModularChess.pieces.Queen import Queen
+from ModularChess.pieces.Rook import Rook
+from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.Movement import Movement
+from ModularChess.utils.Position import Position
+from ModularChess.utils.Promotion import Promotion
 
 
 class Classical(GameMode):
 
     def __init__(self, white: Player, black: Player):
-        super(Classical, self).__init__(Board(), cycle((white, black)))
 
         self.white = white
         self.black = black
 
         class ClassicalPawn(Pawn):
+
+            def __init__(self, board: Board, player: Player, starting_position: Position):
+                super(ClassicalPawn, self).__init__(board, player, starting_position, [Queen, Rook, Bishop, Knight])
+
+            def can_promote_in_position(self, new_position: Position) -> bool:
+                promotion_y = 7 if self.player == white else 0
+                return bool(new_position[0] == promotion_y)
 
             def check_move(self, new_position: Position) -> bool:
                 # Piece didn't move or outside board
@@ -64,7 +71,6 @@ class Classical(GameMode):
                 if np.array_equal(diff, 2 * direction_player) and self.n_moves == 0:
                     return True
 
-                # TODO: Promotion
                 return False
 
             def get_valid_moves(self) -> List[Movement]:
@@ -74,7 +80,11 @@ class Classical(GameMode):
                 # Base movement
                 move: Position = self.position + direction_player
                 if self.board.is_position_inside(move) and self.board[move] is None:
-                    moves.append(BasicMovement(self, move))
+                    if move[0] == (0 if self.player == black else 7):
+                        for piece_type in self.valid_pieces_type:
+                            moves.append(Promotion(self, move, piece_type))
+                    else:
+                        moves.append(BasicMovement(self, move))
 
                 # Initial movement
                 move = self.position + 2 * direction_player
@@ -86,7 +96,11 @@ class Classical(GameMode):
                     destination_piece = self.board[self.position + x]
                     # Capture
                     if self.board.is_position_inside(move) and self.board.can_capture_or_move(self, move):
-                        moves.append(BasicMovement(self, move))
+                        if move[0] == (0 if self.player == black else 7):  # type: ignore
+                            for piece_type in self.valid_pieces_type:
+                                moves.append(Promotion(self, move, piece_type))
+                        else:
+                            moves.append(BasicMovement(self, move))
                     # En Passant
                     elif self.board.is_position_inside(move) and destination_piece is not None and \
                             self.player.can_capture(destination_piece.player) and destination_piece.n_moves == 1 and \
@@ -94,11 +108,11 @@ class Classical(GameMode):
                              and self.position[0] == 3):
                         moves.append(BasicMovement(self, move))
 
-                # TODO: Promotion
-
                 return moves
 
         self.Pawn = ClassicalPawn
+        super(Classical, self).__init__(Board(size=8, dimensions=2), cycle((white, black)),
+                                        [ClassicalPawn, Bishop, Knight, Rook, Queen, King])
 
     def generate_board(self) -> None:
         for pos0, pos1, color in ((0, 1, self.white), (self.board.size - 1, self.board.size - 2, self.black)):
@@ -126,7 +140,7 @@ class Classical(GameMode):
         pieces = [move.piece for move in move.movements]
         if king not in pieces:
             self.force_move(move)
-            if self.board.can_enemy_capture(king.position, king.player.get_allies()):
+            if self.board.can_enemy_piece_capture(king.position, king.player):
                 return False
             self.undo_move(move, change_turn=False)
         # Checks if king move would end up on check
@@ -134,7 +148,7 @@ class Classical(GameMode):
             index = pieces.index(king)
             king_destination = move[index].destination_position
             assert king_destination is not None
-            if self.board.can_enemy_capture(king_destination, king.player.get_allies()):
+            if self.board.can_enemy_piece_capture(king_destination, king.player):
                 return False
 
         return True

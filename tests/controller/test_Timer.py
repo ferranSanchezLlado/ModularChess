@@ -92,6 +92,26 @@ class TestTimer(unittest.TestCase):
         self.timer.start()
         self.assertRaises(Exception, self.timer.resume)
 
+    def test_resume(self):
+        self.timer.start()
+        self.timer.stop()
+        self.timer.resume()
+        time.sleep(1.25 * self.time.total_seconds())
+
+        self.assertEqual(timedelta(seconds=0), self.timer.remaining_time())
+        self.assertEqual(self.time.seconds, self.timer.elapsed_time().seconds)  # Precision error in finish time
+        self.assertTrue(self.timer.has_started())
+        self.assertTrue(self.timer.has_finished())
+        self.assertTrue(self.timer.has_stopped())
+        self.assertTrue(self.finished)
+
+    def test_str(self):
+        hours, minutes, seconds = int(self.timer.remaining_time().total_seconds() // 3600), \
+                                  int(self.timer.remaining_time().total_seconds() // 60 % 60), \
+                                  self.timer.remaining_time().total_seconds() % 60
+
+        self.assertEqual(f"{hours}:{minutes:02d}:{seconds:05.2f}s", str(self.timer))
+
 
 if __name__ == '__main__':
     unittest.main()

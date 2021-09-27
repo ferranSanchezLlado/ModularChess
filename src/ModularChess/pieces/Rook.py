@@ -3,13 +3,34 @@ from typing import List
 
 import numpy as np
 
-from src.ModularChess.pieces.Piece import Piece
-from src.ModularChess.utils.BasicMovement import BasicMovement
-from src.ModularChess.utils.Movement import Movement
-from src.ModularChess.utils.Position import Position
+import ModularChess.pieces.King as King
+from ModularChess.controller.Board import Board
+from ModularChess.controller.Player import Player
+from ModularChess.pieces.Piece import Piece
+from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.Castling import CastlablePiece
+from ModularChess.utils.Movement import Movement
+from ModularChess.utils.Position import Position
 
 
-class Rook(Piece):
+class Rook(CastlablePiece):
+
+    def __init__(self, board: "Board", player: Player, starting_position: Position):
+        super(Rook, self).__init__(board, player, starting_position, [King.King])
+
+    def find_castling_destination(self, other_piece: "CastlablePiece") -> Position:
+        direction: Position = other_piece.position - self.position
+        if self.position[~(direction != 0)] != other_piece.position[~(direction != 0)]:
+            raise Exception("Invalid Axis")
+
+        destination: Position = self.position + np.ceil(direction / 2).astype(np.int_) + \
+                                np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction),
+                                                where=direction != 0)
+        return destination
+
+    def check_valid_castling_destination(self, destination: Position, other_piece: "CastlablePiece") -> bool:
+        # Checked in King
+        return True
 
     def check_move(self, new_position: Position) -> bool:
         # Piece didn't move or outside board
@@ -25,7 +46,6 @@ class Rook(Piece):
         moves: List[Movement] = []
 
         for i in range(len(piece.position)):
-
             min_iterable = piece.position.create_lineal_path(piece.position.copy_and_replace(i, 0))
             moves += [BasicMovement(piece, pos) for pos in itertools.takewhile(piece.__can_move_to__, min_iterable)]
             max_iterable = piece.position.create_lineal_path(piece.position.copy_and_replace(i, piece.board.size - 1))

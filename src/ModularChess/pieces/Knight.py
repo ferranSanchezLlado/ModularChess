@@ -3,10 +3,10 @@ from typing import List
 
 import numpy as np
 
-from src.ModularChess.pieces.Piece import Piece
-from src.ModularChess.utils.BasicMovement import BasicMovement
-from src.ModularChess.utils.Movement import Movement
-from src.ModularChess.utils.Position import Position
+from ModularChess.pieces.Piece import Piece
+from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.Movement import Movement
+from ModularChess.utils.Position import Position
 
 
 class Knight(Piece):
@@ -16,9 +16,8 @@ class Knight(Piece):
             return False
 
         diff = np.abs(new_position - self.position)
-        destination_piece = self.board[new_position]
         return sum(diff == 2) == 1 and sum(diff == 1) == 1 and sum(diff == 0) == self.board.dimensions - 2 and (
-                 destination_piece is None or destination_piece.player != self.player)
+            self.board.can_capture_or_move(self, new_position))
 
     def get_valid_moves(self) -> List[Movement]:
         moves: List[Movement] = []

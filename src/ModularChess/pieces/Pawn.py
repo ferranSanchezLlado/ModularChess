@@ -1,7 +1,9 @@
-from src.ModularChess.pieces.Piece import Piece
+from abc import ABCMeta
+
+from ModularChess.utils.Promotion import PromotablePiece
 
 
-class Pawn(Piece):
+class Pawn(PromotablePiece, metaclass=ABCMeta):
 
     def __repr__(self) -> str:
         return "♙"

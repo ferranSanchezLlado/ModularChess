@@ -1,1 +1,3 @@
-![Tests](https://github.com/ferranSanchezLlado/SlapThatLikeButton-TestingStarterProject/actions/workflows/tests.yml/badge.svg)
+# ModularChess
+
+![Tests](https://github.com/ferranSanchezLlado/ModularChess/actions/workflows/tests.yml/badge.svg)

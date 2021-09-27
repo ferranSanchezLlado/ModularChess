@@ -4,10 +4,10 @@ from typing import List
 import numpy as np
 import numpy.typing as npt
 
-from src.ModularChess.pieces.Piece import Piece
-from src.ModularChess.utils.BasicMovement import BasicMovement
-from src.ModularChess.utils.Movement import Movement
-from src.ModularChess.utils.Position import Position
+from ModularChess.pieces.Piece import Piece
+from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.Movement import Movement
+from ModularChess.utils.Position import Position
 
 
 class Bishop(Piece):
@@ -69,3 +69,7 @@ class Bishop(Piece):
 
     def __repr__(self) -> str:
         return "♗"
+
+    @staticmethod
+    def abbreviation() -> str:
+        return "B"

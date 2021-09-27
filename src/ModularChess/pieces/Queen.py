@@ -1,10 +1,10 @@
 from typing import List
 
-from src.ModularChess.pieces.Bishop import Bishop
-from src.ModularChess.pieces.Piece import Piece
-from src.ModularChess.pieces.Rook import Rook
-from src.ModularChess.utils.Movement import Movement
-from src.ModularChess.utils.Position import Position
+from ModularChess.pieces.Bishop import Bishop
+from ModularChess.pieces.Piece import Piece
+from ModularChess.pieces.Rook import Rook
+from ModularChess.utils.Movement import Movement
+from ModularChess.utils.Position import Position
 
 
 class Queen(Piece):
