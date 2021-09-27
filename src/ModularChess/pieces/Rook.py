@@ -24,8 +24,7 @@ class Rook(CastlablePiece):
             raise Exception("Invalid Axis")
 
         destination: Position = self.position + np.ceil(direction / 2).astype(np.int_) + \
-                                np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction),
-                                                where=direction != 0)
+            np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction), where=direction != 0)
         return destination
 
     def check_valid_castling_destination(self, destination: Position, other_piece: "CastlablePiece") -> bool:
