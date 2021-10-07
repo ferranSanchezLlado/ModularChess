@@ -6,7 +6,7 @@ import numpy.typing as npt
 
 class Position(npt.NDArray[np.int64]):
 
-    def __new__(cls, coord):
+    def __new__(cls, coord) -> "Position":
         if type(coord) is str:
             coord = [int(coord[1]) - 1, ord(coord[0]) - ord('a')]
 
@@ -25,6 +25,9 @@ class Position(npt.NDArray[np.int64]):
             return chr(self[1] + ord('a')) + str(self[0] + 1)
 
         return "(" + ", ".join(map(str, self)) + ")"
+
+    def __repr__(self):
+        return str(self)
 
     def create_lineal_path(self, destination: "Position") -> "Iterable[Position]":
         # DOES NOT RAISE UNTIL EVALUATED

@@ -1,23 +1,26 @@
 import abc
-from typing import Type, List
+from typing import Type, List, TYPE_CHECKING
 
-from ModularChess.controller.Board import Board
-from ModularChess.controller.Player import Player
 from ModularChess.pieces.Piece import Piece
 from ModularChess.utils.Movement import Movement, MovementData
-from ModularChess.utils.Position import Position
+
+if TYPE_CHECKING:
+    from ModularChess.utils.Position import Position
+    from ModularChess.controller.Board import Board
+    from ModularChess.controller.Player import Player
 
 
 class PromotablePiece(Piece, metaclass=abc.ABCMeta):
     # TODO
 
     @abc.abstractmethod
-    def __init__(self, board: Board, player: Player, starting_position: Position, valid_pieces_type: List[Type[Piece]]):
+    def __init__(self, board: "Board", player: "Player", starting_position: "Position",
+                 valid_pieces_type: List[Type["Piece"]]):
         super().__init__(board, player, starting_position)
         self.valid_pieces_type = valid_pieces_type
 
     @abc.abstractmethod
-    def can_promote_in_position(self, new_position: Position) -> bool:
+    def can_promote_in_position(self, new_position: "Position") -> bool:
         """Checks if the piece can promote at the new_position.
 
         :param new_position: position to check promotion
@@ -25,26 +28,26 @@ class PromotablePiece(Piece, metaclass=abc.ABCMeta):
         """
         pass
 
-    def is_a_valid_piece_to_promote(self, piece: Piece) -> bool:
+    def is_a_valid_piece_to_promote(self, piece: "Piece") -> bool:
         return type(piece) in self.valid_pieces_type
 
 
 class Promotion(Movement):
 
-    def __init__(self, piece: PromotablePiece, new_position: Position, promotion_piece_type: Type[Piece]):
+    def __init__(self, piece: "PromotablePiece", new_position: "Position", promotion_piece_type: Type["Piece"]):
         promoted_piece = promotion_piece_type(piece.board, piece.player, new_position)
         promoted_piece.n_moves = piece.n_moves + 1
         self.promotable_piece = piece
 
         move: List[MovementData] = []
-        if piece.board.is_an_enemy_piece(piece, new_position):
+        if piece.board.can_capture(piece, new_position):
             enemy_piece = piece.board[new_position]
             assert enemy_piece is not None
 
             move.append(MovementData(enemy_piece, new_position, None))
         move.append(MovementData(piece, piece.position, None))
         move.append(MovementData(promoted_piece, None, promoted_piece.position))
-        super().__init__(move)
+        super().__init__(move, piece)
 
     def check_valid_move(self) -> bool:
         destination_promoted_piece = self[-1].destination_position

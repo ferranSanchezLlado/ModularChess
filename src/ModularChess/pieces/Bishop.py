@@ -1,29 +1,31 @@
 import itertools
-from typing import List
+from typing import List, TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
 
 from ModularChess.pieces.Piece import Piece
 from ModularChess.utils.BasicMovement import BasicMovement
-from ModularChess.utils.Movement import Movement
 from ModularChess.utils.Position import Position
+
+if TYPE_CHECKING:
+    from ModularChess.utils.Movement import Movement
 
 
 class Bishop(Piece):
 
-    def check_move(self, new_position: Position) -> bool:
+    def check_move(self, new_position: "Position") -> List["Movement"]:
         # Piece didn't move or outside board
-        if not super().check_move(new_position):
-            return False
+        if super().check_move(new_position) is None:
+            return []
         return Bishop.two_lineal_check_move(self, new_position)
 
-    def get_valid_moves(self) -> List[Movement]:
+    def get_valid_moves(self) -> List["Movement"]:
         return Bishop.get_bishop_valid_moves(self)
 
     @classmethod
-    def get_bishop_valid_moves(cls, piece: Piece) -> List[Movement]:
-        moves: List[Movement] = []
+    def get_bishop_valid_moves(cls, piece: "Piece") -> List["Movement"]:
+        moves: List["Movement"] = []
 
         for a, b in itertools.permutations(np.identity(piece.board.dimensions, dtype=int), 2):
 
@@ -43,33 +45,33 @@ class Bishop(Piece):
                     end_position: Position = Position(piece.position + magnitude * vector)
 
                     min_iterable = piece.position.create_lineal_path(end_position)
-                    moves += [BasicMovement(piece, pos) for pos in
-                              itertools.takewhile(piece.__can_move_to__, min_iterable)]
+                    moves += [BasicMovement(piece, pos) for pos in piece.__can_move_to__(min_iterable)]
 
         return moves
 
     # noinspection PyTypeChecker
     @classmethod
-    def two_lineal_check_move(cls, piece: Piece, new_position: Position) -> bool:
-        diff: Position = new_position - piece.position
-        axis_diff: Position = diff != 0
-        n_axis_diff: Position = np.sum(axis_diff)
-        abs_diff_axis: Position = np.abs(diff[axis_diff])
+    def two_lineal_check_move(cls, piece: "Piece", new_position: "Position") -> List["Movement"]:
+        diff: "Position" = new_position - piece.position
+        axis_diff: "Position" = diff != 0
+        n_axis_diff: "Position" = np.sum(axis_diff)
+        abs_diff_axis: "Position" = np.abs(diff[axis_diff])
 
         # Moves in only two axis
         if n_axis_diff != 2 or np.max(abs_diff_axis) != np.min(abs_diff_axis):
-            return False
+            return []
 
         # Checks pieces in the path
         if any(list(piece.board[pos] for pos in piece.position.create_lineal_path(new_position))[:-1]):
-            return False
+            return []
 
-        # Checks if destination is empty or there is an enemy piece
-        return piece.board.can_capture_or_move(piece, new_position)
+        # Checks if destination is not empty or there is an enemy piece
+        if piece.board.can_capture_or_move(piece, new_position):
+            return [BasicMovement(piece, new_position)]
+        return []
 
     def __repr__(self) -> str:
         return "♗"
 
-    @staticmethod
-    def abbreviation() -> str:
+    def abbreviation(self) -> str:
         return "B"

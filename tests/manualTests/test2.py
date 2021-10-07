@@ -21,7 +21,7 @@ def test2():
 
     i = 0
     while not timer.has_finished():
-        timer.move()
+        timer.add_increment()
         print_timer(i := i + 1, timer)
         time.sleep(5)
 

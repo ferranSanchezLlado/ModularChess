@@ -7,3 +7,6 @@ class Pawn(PromotablePiece, metaclass=ABCMeta):
 
     def __repr__(self) -> str:
         return "♙"
+
+    def abbreviation(self) -> str:
+        return ""

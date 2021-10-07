@@ -17,7 +17,7 @@ class TestPromotion(unittest.TestCase):
         self.game_mode = Classical(self.white, self.black)
 
         self.pawn_position = Position([6, 1])
-        self.pawn = self.game_mode.Pawn(self.game_mode.board, self.white, self.pawn_position)
+        self.pawn = self.game_mode.ClassicalPawn(self.game_mode.board, self.white, self.pawn_position)
         self.game_mode.board.add_piece(self.pawn)
 
         self.enemy_piece_position = Position([7, 0])
@@ -48,7 +48,7 @@ class TestPromotion(unittest.TestCase):
         self.promotion1.move()
         self.assertEqual(self.promoted_piece1, self.game_mode.board[self.destination1])
         self.assertIsNone(self.game_mode.board[self.pawn_position])
-        self.assertListEqual([], self.game_mode.board.pieces[self.white][self.game_mode.Pawn])
+        self.assertListEqual([], self.game_mode.board.pieces[self.white][self.game_mode.ClassicalPawn])
         self.assertListEqual([self.promoted_piece1], self.game_mode.board.pieces[self.white][Queen])
         self.assertEqual(self.pawn.n_moves + 1, self.promoted_piece1.n_moves)
 
@@ -56,7 +56,7 @@ class TestPromotion(unittest.TestCase):
         self.promotion2.move()
         self.assertEqual(self.promoted_piece2, self.game_mode.board[self.enemy_piece_position])
         self.assertIsNone(self.game_mode.board[self.pawn_position])
-        self.assertListEqual([], self.game_mode.board.pieces[self.white][self.game_mode.Pawn])
+        self.assertListEqual([], self.game_mode.board.pieces[self.white][self.game_mode.ClassicalPawn])
         self.assertListEqual([], self.game_mode.board.pieces[self.black][Queen])
         self.assertListEqual([self.promoted_piece2], self.game_mode.board.pieces[self.white][Queen])
         self.assertEqual(self.pawn.n_moves + 1, self.promoted_piece2.n_moves)

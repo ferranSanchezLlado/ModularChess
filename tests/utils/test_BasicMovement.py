@@ -11,7 +11,7 @@ from ModularChess.utils.Position import Position
 class TestBasicMovement(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.board = Board(size=8, dimensions=2)
+        self.board = Board((8, 8))
         self.player1 = Player("test")
         self.piece_position1 = Position([self.board.size // 2] * self.board.dimensions)
         self.piece1 = Empty(self.board, self.player1, self.piece_position1)
@@ -29,7 +29,8 @@ class TestBasicMovement(unittest.TestCase):
 
         self.assertEqual(1, len(move.movements))
         self.assertListEqual([MovementData(self.piece1, self.piece_position1, position)], move.movements)
-        self.assertEqual(self.piece1.check_move(position), move.check_valid_move())
+        self.assertEqual(self.piece1.check_move(position)[0], move)
+        self.assertTrue(move.check_valid_move())
 
     def test_move_to_capture(self):
         move = BasicMovement(self.piece1, self.piece_position2)
@@ -37,7 +38,8 @@ class TestBasicMovement(unittest.TestCase):
         self.assertEqual(2, len(move.movements))
         self.assertListEqual([MovementData(self.piece2, self.piece_position2, None),
                               MovementData(self.piece1, self.piece_position1, self.piece_position2)], move.movements)
-        self.assertEqual(self.piece1.check_move(self.piece_position2), move.check_valid_move())
+        self.assertEqual(self.piece1.check_move(self.piece_position2)[0], move)
+        self.assertTrue(move.check_valid_move())
 
 
 if __name__ == '__main__':

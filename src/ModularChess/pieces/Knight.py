@@ -1,26 +1,30 @@
 import itertools
-from typing import List
+from typing import List, TYPE_CHECKING
 
 import numpy as np
 
 from ModularChess.pieces.Piece import Piece
 from ModularChess.utils.BasicMovement import BasicMovement
-from ModularChess.utils.Movement import Movement
 from ModularChess.utils.Position import Position
+
+if TYPE_CHECKING:
+    from ModularChess.utils.Movement import Movement
 
 
 class Knight(Piece):
 
-    def check_move(self, new_position: Position) -> bool:
-        if not super(Knight, self).check_move(new_position):
-            return False
+    def check_move(self, new_position: "Position") -> List["Movement"]:
+        if super(Knight, self).check_move(new_position) is None:
+            return []
 
         diff = np.abs(new_position - self.position)
-        return sum(diff == 2) == 1 and sum(diff == 1) == 1 and sum(diff == 0) == self.board.dimensions - 2 and (
-            self.board.can_capture_or_move(self, new_position))
+        if sum(diff == 2) != 1 or sum(diff == 1) != 1 or sum(diff == 0) != self.board.dimensions - 2 or \
+                not self.board.can_capture_or_move(self, new_position):
+            return []
+        return [BasicMovement(self, new_position)]
 
-    def get_valid_moves(self) -> List[Movement]:
-        moves: List[Movement] = []
+    def get_valid_moves(self) -> List["Movement"]:
+        moves: List["Movement"] = []
 
         for a, b in itertools.permutations(np.identity(self.board.dimensions, dtype=int), 2):
 
@@ -36,3 +40,6 @@ class Knight(Piece):
 
     def __repr__(self) -> str:
         return "♘"
+
+    def abbreviation(self) -> str:
+        return "N"

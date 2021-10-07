@@ -14,7 +14,7 @@ from ModularChess.utils.Position import Position
 
 
 def test1():
-    game_mode = Classical(Player("White", None), Player("Black", None))
+    game_mode = Classical(Player("White"), Player("Black"))
     game_mode.generate_board()
 
     print(game_mode.board)
@@ -22,7 +22,7 @@ def test1():
     pieces: list[Type[Piece]] = [Bishop, King, Knight, Queen, Rook]
 
     for Piece_Cls in pieces:
-        board = Board(dimensions=3)
+        board = Board((8, 8, 8))
 
         initial_position = Position([4, 4, 4])
         piece = Piece_Cls(board, game_mode.white, initial_position)

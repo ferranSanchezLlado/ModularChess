@@ -63,7 +63,7 @@ class TestTimer(unittest.TestCase):
 
     def test_increment(self):
         self.timer.start()
-        self.timer.move()
+        self.timer.add_increment()
         time.sleep(1.25 * self.time.total_seconds())
 
         self.assertEqual(timedelta(seconds=0), self.timer.remaining_time())
@@ -75,7 +75,7 @@ class TestTimer(unittest.TestCase):
 
     def test_increment_stop(self):
         self.timer.start()
-        self.timer.move()
+        self.timer.add_increment()
         self.timer.stop()
 
         self.assertEqual(self.time + self.increment, self.timer.remaining_time() + self.timer.elapsed_time())
@@ -84,8 +84,18 @@ class TestTimer(unittest.TestCase):
         self.assertTrue(self.timer.has_stopped())
         self.assertFalse(self.finished)
 
+    def test_move(self):
+        self.timer.start()
+        self.timer.move()
+
+        self.assertEqual(self.time + self.increment, self.timer.remaining_time() + self.timer.elapsed_time())
+        self.assertTrue(self.timer.has_started())
+        self.assertFalse(self.timer.has_finished())
+        self.assertTrue(self.timer.has_stopped())
+        self.assertFalse(self.finished)
+
     def test_exceptions(self):
-        self.assertRaises(Exception, self.timer.move)
+        self.assertRaises(Exception, self.timer.add_increment)
         self.assertRaises(Exception, self.timer.stop)
         self.assertRaises(Exception, self.timer.resume)
 

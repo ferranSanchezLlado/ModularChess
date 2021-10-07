@@ -30,7 +30,7 @@ class Timer:
         self.timer = threading.Timer(self.time_control.total_seconds(), self.end_call)
         self.timer.start()
 
-    def move(self) -> None:
+    def add_increment(self) -> None:
         if not self.has_started():
             raise Exception("Not Started")
         elif not self.has_stopped():
@@ -40,6 +40,10 @@ class Timer:
 
             self.timer = threading.Timer(self.remaining_time().total_seconds(), self.end_call)
             self.timer.start()
+
+    def move(self) -> None:
+        self.add_increment()
+        self.stop()
 
     def stop(self) -> None:
         if not self.has_started():

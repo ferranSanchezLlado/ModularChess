@@ -1,34 +1,29 @@
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, List, Iterable
+from typing import Tuple, List
 
 
 @dataclass
 class Player:
     name: str
-    color: Optional[Tuple[int, int, int]] = field(default=None)
-    team: "List[Player]" = field(default_factory=list)
+    color: Tuple[int, int, int] = field(default=(-1, -1, -1))
+    allies: List["Player"] = field(default_factory=list)
+    enemies: List["Player"] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.allies = self.allies or [self]
 
     def __repr__(self) -> str:
         return self.name
 
     def __hash__(self):
-        return hash(self.name)
+        return hash(self.name) + hash(self.color)
 
     def can_capture(self, other: "Player"):
-        return self != other and not (self.team is not None and other in self.team)
-
-    def get_allies(self) -> "List[Player]":
-        return [self] + self.team
-
-    def get_enemies(self, all_players: "Iterable[Player]") -> "List[Player]":
-        # TODO: save
-        allies = set(self.get_allies())
-        return list(player for player in all_players if player not in allies)
+        # Checks enemies, in case enemies is empty, will treat all other players excluding allies as enemies
+        return self != other and ((len(self.enemies) == 0 and other not in self.allies) or (other in self.enemies))
 
     @classmethod
-    def join_allies(cls, allies: "List[Player]") -> None:
+    def join_allies(cls, allies: List["Player"], all_player: List["Player"]) -> None:
         for player in allies:
-            # TODO: Maybe upgrade allies to self-reference
-            allies_without_player = allies.copy()
-            allies_without_player.remove(player)
-            player.team = allies_without_player
+            player.allies = allies.copy()
+            player.enemies = [enemy_player for enemy_player in all_player if enemy_player not in allies]

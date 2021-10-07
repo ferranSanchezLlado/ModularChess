@@ -13,7 +13,7 @@ from ModularChess.utils.Position import Position
 class TestMovement(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.board = Board(size=8, dimensions=2)
+        self.board = Board()
         self.player = Player("test")
         self.piece_position = Position([self.board.size // 2] * self.board.dimensions)
         self.piece_destination = Position([0] * self.board.dimensions)
