@@ -1,5 +1,6 @@
 import abc
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, List, Any, no_type_check, TYPE_CHECKING
 
 import numpy as np
@@ -9,11 +10,21 @@ if TYPE_CHECKING:
     from ModularChess.utils.Position import Position
 
 
+class MovementType(Enum):
+    UPDATE = 1
+    ADDITION = 2
+    REMOVAL = 3
+
+
 @dataclass
 class MovementData:
     piece: "Piece"
     initial_position: Optional["Position"]
     destination_position: Optional["Position"]
+
+    def __post_init__(self):
+        if self.initial_position is None and self.destination_position is None:
+            raise Exception("Invalid Movement. This movement does not change anything")
 
     def __iter__(self):
         return iter((self.piece, self.initial_position, self.destination_position))
@@ -26,6 +37,13 @@ class MovementData:
 
     def __str__(self) -> str:
         return str(self.piece) + ": " + str(self.initial_position) + " -> " + str(self.destination_position)
+
+    def type(self) -> MovementType:
+        if self.initial_position is None:
+            return MovementType.ADDITION
+        elif self.destination_position is None:
+            return MovementType.REMOVAL
+        return MovementType.UPDATE
 
 
 class Movement(metaclass=abc.ABCMeta):
@@ -64,19 +82,23 @@ class Movement(metaclass=abc.ABCMeta):
         return repr(self.movements)
 
     def move(self) -> None:
-        for piece, initial_position, destination_position in self.movements:
-            if initial_position is None:
-                piece.position = destination_position
-                piece.board.add_piece(piece)
-            elif destination_position is None:
-                # TODO: Negative position
-                piece.board.remove_piece(piece)
+        for move in self.movements:
+            move_type = move.type()
+            if move_type == MovementType.ADDITION:
+                assert move.destination_position is not None
+                move.piece.position = move.destination_position
+                move.piece.board.add_piece(move.piece)
+            elif move_type == MovementType.REMOVAL:
+                # TODO: Negative position or None
+                move.piece.board.remove_piece(move.piece)
             else:
-                piece.board.move_piece(piece, destination_position)
+                assert move.destination_position is not None
+                move.piece.board.move_piece(move.piece, move.destination_position)
 
         self.is_check = self.__will_be_check()
 
     def check_valid_move(self) -> bool:
+        # TODO: SAVE FEM, allowing reconstruction of board
         position = self.movements[-1].destination_position
         return position is None or self in self.piece.check_move(position)
 

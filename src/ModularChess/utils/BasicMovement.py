@@ -20,9 +20,6 @@ class BasicMovement(Movement):
         move.append(MovementData(piece, piece.position, new_position))
         super().__init__(move, piece)
 
-    def check_valid_move(self) -> bool:
-        return super().check_valid_move()
-
     def __str__(self) -> str:
         if self.piece.board.dimensions == 2:
             move = self.piece.abbreviation()

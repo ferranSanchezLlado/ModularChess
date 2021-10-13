@@ -18,8 +18,8 @@ class CastlablePiece(Piece, metaclass=abc.ABCMeta):
     def __init__(self, board: "Board", player: "Player", starting_position: "Position",
                  castlable_pieces: Optional[List[Type["CastlablePiece"]]] = None):
         super().__init__(board, player, starting_position)
-        self.castlable_pieces: List[Type["CastlablePiece"]] = castlable_pieces or \
-            [piece_type for piece_type in board.pieces[player].keys() if issubclass(piece_type, CastlablePiece)]
+        self.castlable_pieces: List[Type["CastlablePiece"]] = castlable_pieces or [
+            piece_type for piece_type in board.pieces[player].keys() if issubclass(piece_type, CastlablePiece)]
 
     def get_possible_castlable_pieces(self) -> List["CastlablePiece"]:
         return [cast(CastlablePiece, piece) for piece_type in self.castlable_pieces for piece in
@@ -63,5 +63,5 @@ class Castling(Movement):
     def check_valid_move(self) -> bool:
         piece1, dest1 = cast(CastlablePiece, self[0].piece), cast("Position", self[0].destination_position)
         piece2, dest2 = cast(CastlablePiece, self[1].piece), cast("Position", self[1].destination_position)
-        return piece1.check_valid_castling_destination(dest1, piece2) and \
-            piece2.check_valid_castling_destination(dest2, piece1)
+        return piece1.check_valid_castling_destination(dest1, piece2) and (
+            piece2.check_valid_castling_destination(dest2, piece1))

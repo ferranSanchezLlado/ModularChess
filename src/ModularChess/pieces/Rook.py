@@ -1,4 +1,5 @@
-from typing import List, TYPE_CHECKING
+import os
+from typing import List, TYPE_CHECKING, TextIO
 
 import numpy as np
 
@@ -24,8 +25,8 @@ class Rook(CastlablePiece):
         if self.position[~(direction != 0)] != other_piece.position[~(direction != 0)]:
             raise Exception("Invalid Axis")
 
-        destination: "Position" = self.position + np.ceil(direction / 2).astype(np.int_) + \
-            np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction), where=direction != 0)
+        destination: "Position" = self.position + np.ceil(direction / 2).astype(np.int_) + (
+            np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction), where=direction != 0))
         return destination
 
     def check_valid_castling_destination(self, destination: "Position", other_piece: "CastlablePiece") -> bool:
@@ -74,8 +75,14 @@ class Rook(CastlablePiece):
             return []
         return [BasicMovement(piece, new_position)]
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "♖"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "R"
+
+    @staticmethod
+    def image() -> TextIO:
+        return open(os.path.join(Rook.res_path, "Rook.png"))

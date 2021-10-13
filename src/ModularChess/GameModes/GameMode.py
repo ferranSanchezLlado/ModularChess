@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class GameState(Enum):
-    EMPTY = '0'
+    EMPTY_BOARD = '0'
     STARTING = '1'
     PLAYING = '2'
     FINISHED = '3'
@@ -23,11 +23,11 @@ class GameState(Enum):
     MOVES_50 = '3.2.2'
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, GameState):
+        if not isinstance(other, Enum) and other not in GameState:
             return False
-        self_values = self.value.split('.')
-        other_values = other.value.split('.')
-        return all(self_digit == other_digit for self_digit, other_digit in zip(self_values, other_values))
+        self_levels = self.value.split('.')
+        other_levels = other.value.split('.')
+        return all(self_level == other_level for self_level, other_level in zip(self_levels, other_levels))
 
 
 class GameMode(metaclass=abc.ABCMeta):
@@ -101,3 +101,7 @@ class GameMode(metaclass=abc.ABCMeta):
         if change_turn:
             self.order = chain(reversed(player_order), self.order)
             self.turn = next(self.order)
+
+    @abc.abstractmethod
+    def restart(self) -> None:
+        pass

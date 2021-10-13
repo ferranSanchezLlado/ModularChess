@@ -3,6 +3,7 @@ import unittest
 from ModularChess.GameModes.Classical import Classical
 from ModularChess.controller.Player import Player
 from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.EnPassant import EnPassant
 from ModularChess.utils.Position import Position
 from ModularChess.utils.Promotion import Promotion
 from tests.pieces.base_test_pieces import BaseTestPieces
@@ -104,7 +105,7 @@ class TestClassicalPawn(BaseTestPieces):
         self.game_mode.force_move(other_piece.check_move(Position("f5"))[0])
 
         self.assertIsNotEmpty(main_piece.check_move(Position("f6")))
-        self.assertIn(BasicMovement(main_piece, Position("f6")), main_piece.get_valid_moves())
+        self.assertIn(EnPassant(main_piece, Position("f6"), other_piece), main_piece.get_valid_moves())
         self.assertIsEmpty(main_piece.check_move(Position("d6")))
 
         other_piece.n_moves = 2

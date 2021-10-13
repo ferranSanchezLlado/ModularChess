@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Type, Optional, cast, Dict, List, TYPE_CHECKING, Tuple
+from typing import Type, Optional, cast, Dict, List, TYPE_CHECKING, Tuple, Union
 
 import numpy as np
 
@@ -15,12 +15,15 @@ class Board:
 
     def __init__(self, shape: Tuple[int, ...] = (8, 8)):
 
+        if len(shape) < 2:
+            raise Exception("Board should at least have 2 dimensions")
+
         # Maybe sparse
         self.board = np.empty(shape, dtype=object)
 
         self.pieces: Dict["Player", Dict[Type["Piece"], List["Piece"]]] = defaultdict(lambda: defaultdict(list))
 
-    def __getitem__(self, position: "Position") -> Optional["Piece"]:
+    def __getitem__(self, position: Union["Position", Tuple[int, ...]]) -> Optional["Piece"]:
         # Already checked during access
         # if self.is_position_outside(position):
         #     raise Exception("position out of board")
@@ -32,7 +35,7 @@ class Board:
 
         return piece
 
-    def __setitem__(self, position: "Position", piece: Optional["Piece"]) -> None:
+    def __setitem__(self, position: Union["Position", Tuple[int, ...]], piece: Optional["Piece"]) -> None:
         try:
             self.board[tuple(position)] = piece
         except Exception:
@@ -57,8 +60,8 @@ class Board:
         return shape[0]
 
     @property
-    def shape(self):
-        return self.board.shape
+    def shape(self) -> Tuple[int, ...]:
+        return cast(Tuple[int, ...], self.board.shape)
 
     def add_piece(self, piece: "Piece") -> None:
         self[piece.position] = piece
@@ -108,7 +111,18 @@ class Board:
         return destination is not None and piece.player.can_capture(destination.player)
 
     def is_position_outside(self, position: "Position") -> bool:
-        return bool(np.any((position < 0) | (position >= self.shape))) and position.shape[0] == self.dimensions  # type: ignore
+        return position.shape[0] == self.dimensions and np.any(
+            (position < 0) | (position >= self.shape))  # type: ignore
 
     def is_position_inside(self, position: "Position") -> bool:
-        return bool(np.all((position >= 0) & (position < self.shape))) and position.shape[0] == self.dimensions  # type: ignore
+        return position.shape[0] == self.dimensions and np.all(
+            (position >= 0) & (position < self.shape))  # type: ignore
+
+    def to_generic_fen(self) -> str:
+        # Piece + Player index
+        # end line as level separator
+        pass
+
+    @classmethod
+    def from_fen(cls, fen: str) -> "Board":
+        pass

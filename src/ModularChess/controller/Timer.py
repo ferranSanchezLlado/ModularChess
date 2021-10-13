@@ -6,10 +6,11 @@ from typing import Callable, Any, Optional, List
 
 class Timer:
 
-    def __init__(self, time_control: datetime.timedelta, increment: datetime.timedelta, end_call: Callable[[], Any]):
+    def __init__(self, time_control: datetime.timedelta, increment: datetime.timedelta, end_call: Callable[..., Any],
+                 *args, **kwargs):
         def extend_end_call():
             self.finish_time.append(datetime.datetime.now())
-            end_call()
+            end_call(*args, **kwargs)
 
         self.time_control = time_control
         self.increment = increment
@@ -42,8 +43,14 @@ class Timer:
             self.timer.start()
 
     def move(self) -> None:
-        self.add_increment()
-        self.stop()
+        if not self.has_started():
+            raise Exception("Not Started")
+        elif not self.has_stopped():
+            assert self.timer is not None
+            self.timer.cancel()
+            self.expected_finish_time[-1] += self.increment
+            self.finish_time.append(datetime.datetime.now())
+            self.stopped = True
 
     def stop(self) -> None:
         if not self.has_started():
@@ -82,7 +89,7 @@ class Timer:
             return datetime.timedelta()
 
         return sum(((finish_time or datetime.datetime.now()) - start_time
-                   for start_time, finish_time in zip_longest(self.start_time, self.finish_time, fillvalue=None)),
+                    for start_time, finish_time in zip_longest(self.start_time, self.finish_time, fillvalue=None)),
                    datetime.timedelta())
 
     def remaining_time(self) -> datetime.timedelta:

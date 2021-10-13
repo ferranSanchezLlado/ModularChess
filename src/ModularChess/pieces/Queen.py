@@ -1,4 +1,5 @@
-from typing import List, TYPE_CHECKING
+import os
+from typing import List, TYPE_CHECKING, TextIO
 
 from ModularChess.pieces.Bishop import Bishop
 from ModularChess.pieces.Piece import Piece
@@ -20,8 +21,14 @@ class Queen(Piece):
     def get_valid_moves(self) -> List["Movement"]:
         return Bishop.get_bishop_valid_moves(self) + Rook.get_rook_valid_moves(self)
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "♕"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "Q"
+
+    @staticmethod
+    def image() -> TextIO:
+        return open(os.path.join(Queen.res_path, "Queen.png"))

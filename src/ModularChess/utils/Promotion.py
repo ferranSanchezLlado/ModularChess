@@ -52,5 +52,5 @@ class Promotion(Movement):
     def check_valid_move(self) -> bool:
         destination_promoted_piece = self[-1].destination_position
         assert destination_promoted_piece is not None
-        return self.promotable_piece.can_promote_in_position(destination_promoted_piece) and \
-            self.promotable_piece.is_a_valid_piece_to_promote(self[-1].piece) and super().check_valid_move()
+        return self.promotable_piece.can_promote_in_position(destination_promoted_piece) and (
+                self.promotable_piece.is_a_valid_piece_to_promote(self[-1].piece) and super().check_valid_move())

@@ -15,7 +15,6 @@ class FakeMovement(Movement):
 class TestMovementsGraph(unittest.TestCase):
 
     def setUp(self) -> None:
-
         self.move = FakeMovement(0)
         self.node = MovementsNode(None, self.move)
         self.graph = MovementsGraph(self.node, self.node, True, 1)

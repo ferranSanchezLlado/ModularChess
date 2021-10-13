@@ -35,9 +35,10 @@ class BaseTestPieces(unittest.TestCase, abc.ABC):
         for piece in (self.piece1, self.piece2):
             if piece is not None:
                 check_valid_moves_list: List[Movement] = []
-                for pos in np.ndindex(self.board.shape):
-                    if (moves := piece.check_move(Position(pos))) is not None:
-                        check_valid_moves_list += [move for move in moves]
+                for pos in np.ndindex(*self.board.shape):
+                    moves = piece.check_move(Position(pos))
+                    if moves is not None:
+                        check_valid_moves_list += moves
 
                 get_valid_moves_list = piece.get_valid_moves()
                 for move in check_valid_moves_list:

@@ -13,11 +13,13 @@ from ModularChess.pieces.Pawn import Pawn
 from ModularChess.pieces.Queen import Queen
 from ModularChess.pieces.Rook import Rook
 from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.utils.EnPassant import EnPassant
 from ModularChess.utils.Position import Position
 from ModularChess.utils.Promotion import Promotion
 
 if TYPE_CHECKING:
     from ModularChess.utils.Movement import Movement
+    from pieces.Piece import Piece
 
 
 class Classical(GameMode):
@@ -35,10 +37,10 @@ class Classical(GameMode):
         self_classical = self
 
         class ClassicalPawn(Pawn):
-            # TODO: En passant only next turn
 
             def __init__(self, board: "Board", player: "Player", starting_position: Position):
                 super(ClassicalPawn, self).__init__(board, player, starting_position, [Queen, Rook, Bishop, Knight])
+                self.direction_player: Position = Position([-1, 0]) if self.player == black else Position([1, 0])
 
             def can_promote_in_position(self, new_position: Position) -> bool:
                 promotion_y = 7 if self.player == white else 0
@@ -54,38 +56,32 @@ class Classical(GameMode):
                 if super(Pawn, self).check_move(new_position) is None:
                     return []
 
-                direction_player: Position = Position([-1, 0]) if self.player == black else Position([1, 0])
                 diff: Position = new_position - self.position
+                abs_diff: Position = np.abs(diff)
 
                 # Capture
+                if abs_diff.max() == abs_diff.min() == 1 and diff[0] == self.direction_player[0]:
 
-                if np.max(np.abs(diff)) == np.min(np.abs(diff)) == 1 and diff[0] == direction_player[0] and \
-                        self.board.can_capture(self, new_position):
-                    return self.check_promotion(new_position)
+                    if self.board.can_capture(self, new_position):
+                        return self.check_promotion(new_position)
 
-                # En Passant
-                enemy_piece = self.board[self.position + Position((0, diff[1]))]
-                if np.max(np.abs(diff)) == np.min(np.abs(diff)) == 1 and diff[0] == direction_player[0] and \
-                        self.board.can_capture(self, self.position + Position((0, diff[1]))) and \
-                        enemy_piece.n_moves == 1 and (self.player == white and self.position[0] == 4  # type: ignore
-                                                      or self.player == black and self.position[0] == 3) and \
-                        self_classical.moves[-1].piece == enemy_piece:
-                    return [BasicMovement(self, new_position)]
-
-                # Checks pieces in the path and that it's lineal
-                try:
-                    if any(self.board[pos] for pos in self.position.create_lineal_path(new_position)):
-                        return []
-                except Exception:
-                    return []
+                    # En Passant
+                    en_passant_position: Position = self.position + Position((0, diff[1]))
+                    enemy_piece = self.board[en_passant_position]
+                    if enemy_piece is not None and self.player.can_capture(enemy_piece.player) and \
+                            enemy_piece.n_moves == 1 and int(4.5 - self.direction_player[0] / 2) == self.position[0] \
+                            and self_classical.moves[-1].piece == enemy_piece:
+                        return [EnPassant(self, new_position, enemy_piece)]
 
                 # Base movement
-                if np.array_equal(diff, direction_player):
-                    return self.check_promotion(new_position)
+                if self.board[self.position + self.direction_player] is None:
+                    if np.array_equal(diff, self.direction_player):
+                        return self.check_promotion(new_position)
 
-                # Initial movement
-                if np.array_equal(diff, 2 * direction_player) and self.n_moves == 0:
-                    return [BasicMovement(self, new_position)]
+                    # Initial movement
+                    if np.array_equal(diff, 2 * self.direction_player) and self.n_moves == 0 and \
+                            self.board[new_position] is None:
+                        return [BasicMovement(self, new_position)]
 
                 return []
 
@@ -96,11 +92,7 @@ class Classical(GameMode):
                 # Base movement
                 move: Position = self.position + direction_player
                 if self.board.is_position_inside(move) and self.board[move] is None:
-                    if move[0] == (0 if self.player == black else 7):
-                        for piece_type in self.valid_pieces_type:
-                            moves.append(Promotion(self, move, piece_type))
-                    else:
-                        moves.append(BasicMovement(self, move))
+                    moves += self.check_promotion(move)
 
                 # Initial movement
                 move = cast(Position, self.position + 2 * direction_player)
@@ -110,30 +102,35 @@ class Classical(GameMode):
 
                 for x in (Position([0, -1]), Position([0, 1])):
                     move = self.position + direction_player + x
-                    # Capture
-                    if self.board.is_position_inside(move) and self.board.can_capture(self, move):
-                        if move[0] == (0 if self.player == black else 7):  # type: ignore
-                            for piece_type in self.valid_pieces_type:
-                                moves.append(Promotion(self, move, piece_type))
+                    if self.board.is_position_inside(move):
+                        # Capture
+                        if self.board.can_capture(self, move):
+                            moves += self.check_promotion(move)
+                        # En Passant
                         else:
-                            moves.append(BasicMovement(self, move))
-                    # En Passant
-                    elif self.board.is_position_inside(move) and (enemy_piece := self.board[self.position + x]) is not \
-                            None and self.player.can_capture(enemy_piece.player) and enemy_piece.n_moves == 1 and \
-                            (self.player == white and self.position[0] == 4 or self.player == black and
-                             self.position[0] == 3) and self_classical.moves[-1].piece == enemy_piece:
-                        moves.append(BasicMovement(self, move))
+                            enemy_piece = self.board[self.position + x]
+                            if enemy_piece is not None and self.player.can_capture(enemy_piece.player) and \
+                                    enemy_piece.n_moves == 1 and int(4.5 - self.direction_player[0] / 2) == \
+                                    self.position[0] and self_classical.moves[-1].piece == enemy_piece:
+                                moves.append(EnPassant(self, move, enemy_piece))
 
                 return moves
 
-        pieces = [ClassicalPawn, Bishop, Knight, Rook, Queen, King]
+        def custom_repr(piece_self: "Piece"):
+            return chr(ord(piece_self.piece_unicode()) + (6 if piece_self.player == white else 0))
 
-        # for piece in pieces:
-        #     piece.__prev_repr__ = piece.__repr__
-        #     piece.__repr__ = lambda piece_self: chr(ord(piece_self.__prev_repr__()) +
-        #                                             (6 if piece_self.player == black else 0))
+        pieces = [ClassicalPawn, Bishop, Knight, Rook, Queen, King]
+        for piece in pieces:
+            piece.__repr__ = custom_repr  # type: ignore
 
         super(Classical, self).__init__(Board((8, 8)), cycle((white, black)), pieces)
+
+    def __del__(self):
+        def original_repr(piece_self: "Piece"):
+            return piece_self.piece_unicode()
+
+        for piece in self.pieces:
+            piece.__repr__ = original_repr  # type: ignore
 
     def generate_board(self) -> None:
         for pos0, pos1, color in ((0, 1, self.white), (self.board.size - 1, self.board.size - 2, self.black)):
@@ -154,7 +151,7 @@ class Classical(GameMode):
 
     def check_game_state(self) -> Tuple["GameState", List["Player"]]:
         if np.all(self.board.board == None):  # noqa: E711
-            return GameState.EMPTY, []
+            return GameState.EMPTY_BOARD, []
         if len(self.moves) == 0:
             return GameState.STARTING, []
         if self.check_checkmate():
@@ -189,3 +186,9 @@ class Classical(GameMode):
         will_not_be_in_check = self.board.can_enemy_piece_capture_piece(king) is None
         self.undo_move(1, change_turn=False)
         return will_not_be_in_check
+
+    def restart(self) -> None:
+        self.last_capture = 0
+        self.order = cycle((self.white, self.black))
+        self.turn = next(self.order)
+        self.board = Board((8, 8))

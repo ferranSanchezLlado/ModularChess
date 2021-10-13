@@ -1,5 +1,6 @@
 import abc
-from typing import TYPE_CHECKING, List, Iterable
+import os
+from typing import TYPE_CHECKING, List, Iterable, TextIO
 
 import numpy as np
 
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
 
 # TODO: Abstract classes or variable for Special movement
 class Piece(metaclass=abc.ABCMeta):
+    res_path = os.path.join("..", "..", "res")
 
     def __init__(self, board: "Board", player: "Player", starting_position: "Position"):
         self.player = player
@@ -25,8 +27,8 @@ class Piece(metaclass=abc.ABCMeta):
     def __eq__(self, other) -> bool:
         if not isinstance(other, Piece):
             return False
-        return self.player == other.player and self.board == other.board and \
-            np.array_equal(self.position, other.position) and self.n_moves == other.n_moves
+        return self.player == other.player and self.board == other.board and (
+                np.array_equal(self.position, other.position) and self.n_moves == other.n_moves)
 
     @abc.abstractmethod
     def check_move(self, new_position: "Position") -> List["Movement"]:
@@ -68,6 +70,20 @@ class Piece(metaclass=abc.ABCMeta):
             else:
                 return
 
+    @staticmethod
     @abc.abstractmethod
-    def abbreviation(self) -> str:
+    def abbreviation() -> str:
         pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def piece_unicode() -> str:
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def image() -> TextIO:
+        pass
+
+    def __repr__(self) -> str:
+        return self.piece_unicode()

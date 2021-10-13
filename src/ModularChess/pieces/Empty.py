@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, TextIO
 
 import numpy as np
 
@@ -17,12 +17,18 @@ class Empty(Piece):
 
     def get_valid_moves(self) -> List["Movement"]:
         moves: List["Movement"] = []
-        for index in np.ndindex(self.board.shape):
+        for index in np.ndindex(*self.board.shape):
             moves.append(BasicMovement(self, Position(index)))
         return []
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "▣"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "None"
+
+    @staticmethod
+    def image() -> TextIO:
+        raise NotImplementedError("No image")

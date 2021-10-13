@@ -1,5 +1,6 @@
 import itertools
-from typing import List, TYPE_CHECKING
+import os
+from typing import List, TYPE_CHECKING, TextIO
 
 import numpy as np
 
@@ -38,8 +39,14 @@ class Knight(Piece):
                                 moves.append(BasicMovement(self, move))
         return moves
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "♘"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "N"
+
+    @staticmethod
+    def image() -> TextIO:
+        return open(os.path.join(Knight.res_path, "Knight.png"))

@@ -8,6 +8,7 @@ class Player:
     color: Tuple[int, int, int] = field(default=(-1, -1, -1))
     allies: List["Player"] = field(default_factory=list)
     enemies: List["Player"] = field(default_factory=list)
+    players: List["Player"] = field(default_factory=list)
 
     def __post_init__(self):
         self.allies = self.allies or [self]
@@ -27,3 +28,4 @@ class Player:
         for player in allies:
             player.allies = allies.copy()
             player.enemies = [enemy_player for enemy_player in all_player if enemy_player not in allies]
+            player.players = all_player

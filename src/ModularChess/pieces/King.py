@@ -1,4 +1,5 @@
-from typing import List, TYPE_CHECKING
+import os
+from typing import List, TYPE_CHECKING, TextIO
 
 import numpy as np
 import numpy.typing as npt
@@ -75,7 +76,7 @@ class King(CastlablePiece):
     def get_valid_moves(self) -> List["Movement"]:
         moves: List["Movement"] = []
 
-        for i in range(1, 2**len(self.position)):
+        for i in range(1, 2 ** len(self.position)):
             binary = [int(x) for x in bin(i)[2:]]
             vector: npt.NDArray[np.int_] = np.array([0] * (len(self.position) - len(binary)) + binary)
 
@@ -97,8 +98,14 @@ class King(CastlablePiece):
                     moves.append(move)
         return moves
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "♔"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "K"
+
+    @staticmethod
+    def image() -> TextIO:
+        return open(os.path.join(King.res_path, "King.png"))

@@ -1,5 +1,6 @@
 import itertools
-from typing import List, TYPE_CHECKING
+import os
+from typing import List, TYPE_CHECKING, TextIO
 
 import numpy as np
 import numpy.typing as npt
@@ -30,7 +31,7 @@ class Bishop(Piece):
         for a, b in itertools.permutations(np.identity(piece.board.dimensions, dtype=int), 2):
 
             # Transforms binary inputs to integer and checks a > b. Avoiding already seen permutations
-            if a.dot(2**np.arange(a.size)[::-1]) > b.dot(2**np.arange(b.size)[::-1]):
+            if a.dot(2 ** np.arange(a.size)[::-1]) > b.dot(2 ** np.arange(b.size)[::-1]):
                 vector: npt.NDArray[np.int_] = a + b
 
                 for direction in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
@@ -70,8 +71,14 @@ class Bishop(Piece):
             return [BasicMovement(piece, new_position)]
         return []
 
-    def __repr__(self) -> str:
+    @staticmethod
+    def piece_unicode() -> str:
         return "♗"
 
-    def abbreviation(self) -> str:
+    @staticmethod
+    def abbreviation() -> str:
         return "B"
+
+    @staticmethod
+    def image() -> TextIO:
+        return open(os.path.join(Bishop.res_path, "Bishop.png"))
