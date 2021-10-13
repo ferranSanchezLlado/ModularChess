@@ -31,4 +31,4 @@ class BasicMovement(Movement):
             if len(self) == 2:  # Capture
                 move += "x"
             return move + str(self.movements[-1].destination_position) + ("+" if self.is_check else "")
-        return super(BasicMovement, self).__str__()
+        return super().__str__()

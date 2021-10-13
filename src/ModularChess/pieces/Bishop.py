@@ -1,6 +1,6 @@
 import itertools
 import os
-from typing import List, TYPE_CHECKING, TextIO
+from typing import List, TYPE_CHECKING, TextIO, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -54,7 +54,7 @@ class Bishop(Piece):
     @classmethod
     def two_lineal_check_move(cls, piece: "Piece", new_position: "Position") -> List["Movement"]:
         diff: "Position" = new_position - piece.position
-        axis_diff: "Position" = diff != 0
+        axis_diff = cast("Position", diff != 0)
         n_axis_diff: "Position" = np.sum(axis_diff)
         abs_diff_axis: "Position" = np.abs(diff[axis_diff])
 

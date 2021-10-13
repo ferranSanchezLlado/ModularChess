@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class King(CastlablePiece):
 
     def __init__(self, board: "Board", player: "Player", starting_position: "Position"):
-        super(King, self).__init__(board, player, starting_position, [Rook.Rook])
+        super().__init__(board, player, starting_position, [Rook.Rook])
 
     def find_castling_destination(self, other_piece: "CastlablePiece") -> "Position":
         direction: "Position" = other_piece.position - self.position

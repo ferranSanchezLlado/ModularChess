@@ -14,7 +14,7 @@ from ModularChess.utils.Position import Position
 class DebugMovement(Movement):
 
     def __init__(self, movements: List[MovementData], player: Optional[Player] = None):
-        super(DebugMovement, self).__init__(movements, player)
+        super().__init__(movements, player)
 
 
 class TestCastling(unittest.TestCase):

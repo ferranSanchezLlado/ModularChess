@@ -2,8 +2,8 @@ import os
 
 import pygame
 
-from GameModes.GameMode import GameMode, GameState
-from utils.Position import Position
+from ModularChess.GameModes.GameMode import GameMode, GameState
+from ModularChess.utils.Position import Position
 
 
 def color_surface(surface, red, green, blue):
@@ -76,7 +76,7 @@ class Display:
                                 while True:
                                     try:
                                         chosen_index = int(input("Valid moves: \n - " + '\n - '.join(
-                                            (str(move) for move in moves))))
+                                            str(move) for move in moves)))
                                         if 0 <= chosen_index < len(moves):
                                             break
                                     except ValueError:

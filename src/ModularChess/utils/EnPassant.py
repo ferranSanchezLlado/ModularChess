@@ -12,4 +12,4 @@ class EnPassant(Movement):
         moves = [MovementData(captured_piece, captured_piece.position, None),
                  MovementData(piece, piece.position, new_position)]
 
-        super(EnPassant, self).__init__(moves, piece=piece)
+        super().__init__(moves, piece=piece)

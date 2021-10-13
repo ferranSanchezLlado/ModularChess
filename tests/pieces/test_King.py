@@ -49,7 +49,7 @@ class TestKing(BaseTestPieces):
     def test_check_moves_same_as_get_valid_moves(self):
         self.piece1 = self.king
         self.piece2 = None
-        super(TestKing, self).test_check_moves_same_as_get_valid_moves()
+        super().test_check_moves_same_as_get_valid_moves()
 
     def test_get_valid_moves(self):
         valid_moves = self.king.get_valid_moves()

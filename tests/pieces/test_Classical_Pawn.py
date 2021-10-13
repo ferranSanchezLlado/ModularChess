@@ -89,7 +89,7 @@ class TestClassicalPawn(BaseTestPieces):
         self.assertIsEmpty(self.piece2.get_valid_moves())
 
     def test_check_moves_same_as_get_valid_moves(self):
-        super(TestClassicalPawn, self).test_check_moves_same_as_get_valid_moves()
+        super().test_check_moves_same_as_get_valid_moves()
 
     def test_en_passant(self):
         position = Position("e5")

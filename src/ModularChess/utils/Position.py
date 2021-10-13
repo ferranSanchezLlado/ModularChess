@@ -13,7 +13,7 @@ class Position(npt.NDArray[np.int64]):
         if any(not np.issubdtype(type(x), np.integer) for x in coord):
             raise Exception("all elements should be integers")
 
-        position = np.asarray(coord).view(cls)
+        position: Position = np.asarray(coord).view(cls)
 
         if position.ndim != 1:
             raise Exception("position can only be a 1D array")

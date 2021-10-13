@@ -21,7 +21,7 @@ class TestMovement(unittest.TestCase):
 
         class TemporalMovement(Movement):
             def __init__(self, moves: List[MovementData]):
-                super(TemporalMovement, self).__init__(moves)
+                super().__init__(moves)
 
         self.move = TemporalMovement([MovementData(self.piece, None, self.piece_position),
                                       MovementData(self.piece, self.piece_position, self.piece_destination),

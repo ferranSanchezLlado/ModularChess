@@ -19,7 +19,7 @@ from ModularChess.utils.Promotion import Promotion
 
 if TYPE_CHECKING:
     from ModularChess.utils.Movement import Movement
-    from pieces.Piece import Piece
+    from ModularChess.pieces.Piece import Piece
 
 
 class Classical(GameMode):
@@ -39,7 +39,7 @@ class Classical(GameMode):
         class ClassicalPawn(Pawn):
 
             def __init__(self, board: "Board", player: "Player", starting_position: Position):
-                super(ClassicalPawn, self).__init__(board, player, starting_position, [Queen, Rook, Bishop, Knight])
+                super().__init__(board, player, starting_position, [Queen, Rook, Bishop, Knight])
                 self.direction_player: Position = Position([-1, 0]) if self.player == black else Position([1, 0])
 
             def can_promote_in_position(self, new_position: Position) -> bool:
@@ -123,7 +123,7 @@ class Classical(GameMode):
         for piece in pieces:
             piece.__repr__ = custom_repr  # type: ignore
 
-        super(Classical, self).__init__(Board((8, 8)), cycle((white, black)), pieces)
+        super().__init__(Board((8, 8)), cycle((white, black)), pieces)
 
     def __del__(self):
         def original_repr(piece_self: "Piece"):
@@ -171,7 +171,7 @@ class Classical(GameMode):
         return self.board.can_enemy_piece_capture_piece(king) is not None and len(self.generate_moves()) == 0
 
     def move(self, move: "Movement") -> None:
-        super(Classical, self).move(move)
+        super().move(move)
         if move.piece_is_captured():
             self.last_capture = len(self.moves)
 

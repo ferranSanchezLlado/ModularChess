@@ -111,12 +111,12 @@ class Board:
         return destination is not None and piece.player.can_capture(destination.player)
 
     def is_position_outside(self, position: "Position") -> bool:
-        return position.shape[0] == self.dimensions and np.any(
-            (position < 0) | (position >= self.shape))  # type: ignore
+        return cast(bool, position.shape[0] == self.dimensions and np.any(
+            (position < 0) | (position >= self.shape)))  # type: ignore
 
     def is_position_inside(self, position: "Position") -> bool:
-        return position.shape[0] == self.dimensions and np.all(
-            (position >= 0) & (position < self.shape))  # type: ignore
+        return cast(bool, position.shape[0] == self.dimensions and np.all(
+            (position >= 0) & (position < self.shape)))  # type: ignore
 
     def to_generic_fen(self) -> str:
         # Piece + Player index

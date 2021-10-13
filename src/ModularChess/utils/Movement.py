@@ -117,7 +117,7 @@ class Movement(metaclass=abc.ABCMeta):
     def inverse(self) -> "Movement":
         class InverseMovement(Movement):
             def __init__(self, move: Movement):
-                super(InverseMovement, self).__init__([MovementData(
+                super().__init__([MovementData(
                     move.piece, move.destination_position, move.initial_position) for move in reversed(move.movements)],
                     piece=move.piece)
 

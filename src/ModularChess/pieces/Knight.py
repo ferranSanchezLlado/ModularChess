@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Knight(Piece):
 
     def check_move(self, new_position: "Position") -> List["Movement"]:
-        if super(Knight, self).check_move(new_position) is None:
+        if super().check_move(new_position) is None:
             return []
 
         diff = np.abs(new_position - self.position)
