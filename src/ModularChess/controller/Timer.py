@@ -3,6 +3,8 @@ import threading
 from itertools import zip_longest
 from typing import Callable, Any, Optional, List
 
+from ModularChess.utils.Exceptions import TimerError
+
 
 class Timer:
 
@@ -33,7 +35,7 @@ class Timer:
 
     def add_increment(self) -> None:
         if not self.has_started():
-            raise Exception("Not Started")
+            raise TimerError("Not Started")
         elif not self.has_stopped():
             assert self.timer is not None
             self.timer.cancel()
@@ -44,7 +46,7 @@ class Timer:
 
     def move(self) -> None:
         if not self.has_started():
-            raise Exception("Not Started")
+            raise TimerError("Not Started")
         elif not self.has_stopped():
             assert self.timer is not None
             self.timer.cancel()
@@ -54,7 +56,7 @@ class Timer:
 
     def stop(self) -> None:
         if not self.has_started():
-            raise Exception("Not Started")
+            raise TimerError("Not Started")
         elif not self.has_stopped():
             assert self.timer is not None
             self.timer.cancel()
@@ -63,9 +65,9 @@ class Timer:
 
     def resume(self) -> None:
         if not self.has_started():
-            raise Exception("Not Started")
+            raise TimerError("Not Started")
         if not self.stopped:
-            raise Exception("Not Stopped")
+            raise TimerError("Not Stopped")
         remaining_time = self.remaining_time()
 
         self.start_time.append(datetime.datetime.now())

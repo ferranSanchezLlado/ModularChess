@@ -5,23 +5,23 @@ from typing import List, TYPE_CHECKING, TextIO, cast
 import numpy as np
 import numpy.typing as npt
 
+from ModularChess.movements.BasicMovement import BasicMovement
 from ModularChess.pieces.Piece import Piece
-from ModularChess.utils.BasicMovement import BasicMovement
 from ModularChess.utils.Position import Position
 
 if TYPE_CHECKING:
-    from ModularChess.utils.Movement import Movement
+    from ModularChess.movements.Movement import Movement
 
 
 class Bishop(Piece):
 
-    def check_move(self, new_position: "Position") -> List["Movement"]:
+    def check_piece_valid_move(self, new_position: "Position") -> List["Movement"]:
         # Piece didn't move or outside board
-        if super().check_move(new_position) is None:
+        if super().check_piece_valid_move(new_position) is None:
             return []
         return Bishop.two_lineal_check_move(self, new_position)
 
-    def get_valid_moves(self) -> List["Movement"]:
+    def get_piece_valid_moves(self) -> List["Movement"]:
         return Bishop.get_bishop_valid_moves(self)
 
     @classmethod
@@ -39,14 +39,15 @@ class Bishop(Piece):
                     index = np.where(vector)
                     vector[index] = direction
 
-                    direction_array: npt.NDArray[np.int_] = np.array(list(piece.board.size - 1 if el > 0 else 0 for el
-                                                                          in direction))
+                    direction_array: npt.NDArray[np.int_] = np.array([piece.board.size - 1 if el > 0 else 0 for el in
+                                                                      direction])
                     magnitude: npt.NDArray[np.int_] = np.min(np.abs(direction_array - piece.position[index]))
 
                     end_position: Position = Position(piece.position + magnitude * vector)
 
                     min_iterable = piece.position.create_lineal_path(end_position)
-                    moves += [BasicMovement(piece, pos) for pos in piece.__can_move_to__(min_iterable)]
+                    moves += [BasicMovement(piece, pos, is_valid_move=True) for pos in
+                              piece.__can_move_to__(min_iterable)]
 
         return moves
 
@@ -63,12 +64,12 @@ class Bishop(Piece):
             return []
 
         # Checks pieces in the path
-        if any(list(piece.board[pos] for pos in piece.position.create_lineal_path(new_position))[:-1]):
+        if any([piece.board[pos] for pos in piece.position.create_lineal_path(new_position)][:-1]):
             return []
 
         # Checks if destination is not empty or there is an enemy piece
         if piece.board.can_capture_or_move(piece, new_position):
-            return [BasicMovement(piece, new_position)]
+            return [BasicMovement(piece, new_position, is_valid_move=True)]
         return []
 
     @staticmethod
@@ -82,3 +83,7 @@ class Bishop(Piece):
     @staticmethod
     def image() -> TextIO:
         return open(os.path.join(Bishop.res_path, "Bishop.png"))
+
+    @staticmethod
+    def piece_value() -> float:
+        return 3

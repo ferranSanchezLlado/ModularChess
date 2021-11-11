@@ -4,6 +4,7 @@ from typing import Type, Optional, cast, Dict, List, TYPE_CHECKING, Tuple, Union
 import numpy as np
 
 from ModularChess.pieces.Empty import Empty
+from ModularChess.utils.Exceptions import InvalidPositionError, InvalidArgumentsError
 
 if TYPE_CHECKING:
     from ModularChess.controller.Player import Player
@@ -16,7 +17,7 @@ class Board:
     def __init__(self, shape: Tuple[int, ...] = (8, 8)):
 
         if len(shape) < 2:
-            raise Exception("Board should at least have 2 dimensions")
+            raise InvalidArgumentsError("Board should at least have 2 dimensions")
 
         # Maybe sparse
         self.board = np.empty(shape, dtype=object)
@@ -24,14 +25,10 @@ class Board:
         self.pieces: Dict["Player", Dict[Type["Piece"], List["Piece"]]] = defaultdict(lambda: defaultdict(list))
 
     def __getitem__(self, position: Union["Position", Tuple[int, ...]]) -> Optional["Piece"]:
-        # Already checked during access
-        # if self.is_position_outside(position):
-        #     raise Exception("position out of board")
-
         try:
             piece = cast(Optional["Piece"], self.board[tuple(position)])
         except Exception:
-            raise Exception("position out of board")
+            raise InvalidPositionError("position out of board")
 
         return piece
 
@@ -39,7 +36,7 @@ class Board:
         try:
             self.board[tuple(position)] = piece
         except Exception:
-            raise Exception("position out of board")
+            raise InvalidPositionError("position out of board")
 
     def __str__(self) -> str:
         # Flips all axis excluding y, making the point 0 to be the lower left corner
@@ -84,7 +81,7 @@ class Board:
         for enemy_player in piece.player.enemies:
             for enemy_pieces in self.pieces[enemy_player].values():
                 for enemy_piece in enemy_pieces:
-                    if enemy_piece.check_move(piece.position):
+                    if enemy_piece.check_piece_valid_move(piece.position):
                         return piece
         return None
 
@@ -117,12 +114,3 @@ class Board:
     def is_position_inside(self, position: "Position") -> bool:
         return cast(bool, position.shape[0] == self.dimensions and np.all(
             (position >= 0) & (position < self.shape)))  # type: ignore
-
-    def to_generic_fen(self) -> str:
-        # Piece + Player index
-        # end line as level separator
-        pass
-
-    @classmethod
-    def from_fen(cls, fen: str) -> "Board":
-        pass

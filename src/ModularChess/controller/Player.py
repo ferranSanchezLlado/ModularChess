@@ -17,7 +17,7 @@ class Player:
         return self.name
 
     def __hash__(self):
-        return hash(self.name) + hash(self.color)
+        return hash((self.name, self.color))
 
     def can_capture(self, other: "Player"):
         # Checks enemies, in case enemies is empty, will treat all other players excluding allies as enemies

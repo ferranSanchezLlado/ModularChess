@@ -5,12 +5,13 @@ import numpy as np
 import numpy.typing as npt
 
 import ModularChess.pieces.Rook as Rook
-from ModularChess.utils.BasicMovement import BasicMovement
-from ModularChess.utils.Castling import CastlablePiece, Castling
+from ModularChess.movements.BasicMovement import BasicMovement
+from ModularChess.movements.Castling import CastlablePiece, Castling
+from ModularChess.utils.Exceptions import InvalidMoveException, InvalidPathException
 from ModularChess.utils.Position import Position
 
 if TYPE_CHECKING:
-    from ModularChess.utils.Movement import Movement
+    from ModularChess.movements.Movement import Movement
     from ModularChess.controller.Player import Player
     from ModularChess.controller.Board import Board
 
@@ -23,9 +24,9 @@ class King(CastlablePiece):
     def find_castling_destination(self, other_piece: "CastlablePiece") -> "Position":
         direction: "Position" = other_piece.position - self.position
         if self.n_moves != 0 or other_piece.n_moves != 0:
-            raise Exception("Piece has moved")
+            raise InvalidMoveException("Piece has moved")
         if np.any(self.position[~(direction != 0)] != other_piece.position[~(direction != 0)]):
-            raise Exception("Invalid Axis")
+            raise InvalidMoveException("Invalid Axis")
 
         destination: "Position" = self.position + np.ceil(direction / 2).astype(np.int_)
         return destination
@@ -37,23 +38,20 @@ class King(CastlablePiece):
 
         # Checks pieces in the path
         try:
-            if any(list(self.board[pos] for pos in self.position.create_lineal_path(other_piece.position))[:-1]):
+            if any([self.board[pos] for pos in self.position.create_lineal_path(other_piece.position)][:-1]):
                 return False
-        except Exception:
+        except InvalidPathException:
             return False
 
         # Checks during the path of the king
-        if any(self.board.can_enemy_piece_capture_position(pos, self.player) for pos in
-               self.position.create_lineal_path(destination)):
-            return False
+        return not any(
+            self.board.can_enemy_piece_capture_position(pos, self.player)
+            for pos in self.position.create_lineal_path(destination)
+        )
 
-        return True
-
-    # TODO: Castling
-    # TODO: Checks
-    def check_move(self, new_position: "Position") -> List["Movement"]:
+    def check_piece_valid_move(self, new_position: "Position") -> List["Movement"]:
         # Piece didn't move or outside board
-        if super().check_move(new_position) is None:
+        if super().check_piece_valid_move(new_position) is None:
             return []
         diff = np.abs(new_position - self.position)
 
@@ -63,17 +61,17 @@ class King(CastlablePiece):
                 piece = self.find_nearest_piece(new_position)
                 destination = self.find_castling_destination(piece)
                 if self.check_valid_castling_destination(destination, piece):
-                    return [Castling(self, piece)]
-            except Exception:
+                    return [Castling(self, piece, is_valid_move=True)]
+            except InvalidMoveException:
                 pass
             return []
 
         # Checks if destination is not empty or there is an enemy piece
         if not self.board.can_capture_or_move(self, new_position):
             return []
-        return [BasicMovement(self, new_position)]
+        return [BasicMovement(self, new_position, is_valid_move=True)]
 
-    def get_valid_moves(self) -> List["Movement"]:
+    def get_piece_valid_moves(self) -> List["Movement"]:
         moves: List["Movement"] = []
 
         for i in range(1, 2 ** len(self.position)):
@@ -88,7 +86,7 @@ class King(CastlablePiece):
                 vector[n_1s] = np.where(direction == 1, -1, 1)
                 position: Position = Position(vector) + self.position
                 if self.board.is_position_inside(position) and self.board.can_capture_or_move(self, position):
-                    moves.append(BasicMovement(self, position))
+                    moves.append(BasicMovement(self, position, is_valid_move=True))
 
         # Finds possible castling positions
         if self.n_moves == 0:
@@ -109,3 +107,7 @@ class King(CastlablePiece):
     @staticmethod
     def image() -> TextIO:
         return open(os.path.join(King.res_path, "King.png"))
+
+    @staticmethod
+    def piece_value() -> float:
+        return 0

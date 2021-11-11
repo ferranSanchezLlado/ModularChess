@@ -4,16 +4,15 @@ from typing import TYPE_CHECKING, List, Iterable, TextIO
 
 import numpy as np
 
-from ModularChess.utils.BasicMovement import BasicMovement
+from ModularChess.movements.BasicMovement import BasicMovement
 
 if TYPE_CHECKING:
-    from ModularChess.utils.Movement import Movement
+    from ModularChess.movements.Movement import Movement
     from ModularChess.controller.Board import Board
     from ModularChess.controller.Player import Player
     from ModularChess.utils.Position import Position
 
 
-# TODO: Abstract classes or variable for Special movement
 class Piece(metaclass=abc.ABCMeta):
     res_path = os.path.join("..", "..", "res")
 
@@ -30,8 +29,11 @@ class Piece(metaclass=abc.ABCMeta):
         return self.player == other.player and self.board == other.board and (
                 np.array_equal(self.position, other.position) and self.n_moves == other.n_moves)
 
+    def __hash__(self):
+        return hash((self.__class__.__name__, self.player, self.n_moves))
+
     @abc.abstractmethod
-    def check_move(self, new_position: "Position") -> List["Movement"]:
+    def check_piece_valid_move(self, new_position: "Position") -> List["Movement"]:
         """
         Checks if the piece can be moved to the specified position. The moves to be tested should represent
         BasicMovement, allowing the testing through Movement.
@@ -44,8 +46,7 @@ class Piece(metaclass=abc.ABCMeta):
         return [BasicMovement(self, new_position)]
 
     @abc.abstractmethod
-    def get_valid_moves(self) -> List["Movement"]:
-        # TODO: Filter moves that leave king in check
+    def get_piece_valid_moves(self) -> List["Movement"]:
         pass
 
     def __can_move_to__(self, positions: Iterable["Position"]) -> Iterable["Position"]:
@@ -83,6 +84,11 @@ class Piece(metaclass=abc.ABCMeta):
     @staticmethod
     @abc.abstractmethod
     def image() -> TextIO:
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def piece_value() -> float:
         pass
 
     def __repr__(self) -> str:

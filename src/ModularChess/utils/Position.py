@@ -3,6 +3,8 @@ from typing import Iterable
 import numpy as np
 import numpy.typing as npt
 
+from ModularChess.utils.Exceptions import InvalidPathException, InvalidArgumentsError
+
 
 class Position(npt.NDArray[np.int64]):
 
@@ -11,12 +13,12 @@ class Position(npt.NDArray[np.int64]):
             coord = [int(coord[1]) - 1, ord(coord[0]) - ord('a')]
 
         if any(not np.issubdtype(type(x), np.integer) for x in coord):
-            raise Exception("all elements should be integers")
+            raise InvalidArgumentsError("all elements should be integers")
 
         position: Position = np.asarray(coord).view(cls)
 
         if position.ndim != 1:
-            raise Exception("position can only be a 1D array")
+            raise InvalidArgumentsError("position can only be a 1D array")
         return position
 
     # only called on str()
@@ -29,10 +31,13 @@ class Position(npt.NDArray[np.int64]):
     def __repr__(self):
         return str(self)
 
+    def __hash__(self):
+        return hash(str(self))
+
     def create_lineal_path(self, destination: "Position") -> "Iterable[Position]":
         # DOES NOT RAISE UNTIL EVALUATED
         if self.shape != destination.shape:
-            raise Exception("different dimensions.")
+            raise InvalidArgumentsError("different dimensions.")
 
         diff: Position = destination - self
         abs_diff: Position = np.abs(diff)
@@ -40,7 +45,7 @@ class Position(npt.NDArray[np.int64]):
         not_linear = abs_diff != np.max(abs_diff)
 
         if np.any(not_linear, where=axis_diff):  # type: ignore
-            raise Exception("destination path is not lineal.")
+            raise InvalidPathException("destination path is not lineal.")
 
         direction = np.floor_divide(diff, np.abs(diff), out=np.zeros_like(diff), where=diff != 0)
 

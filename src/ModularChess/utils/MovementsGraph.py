@@ -2,7 +2,7 @@ import dataclasses
 from typing import List, TYPE_CHECKING, Optional, cast
 
 if TYPE_CHECKING:
-    from ModularChess.utils.Movement import Movement
+    from ModularChess.movements.Movement import Movement
 
 
 @dataclasses.dataclass

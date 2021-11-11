@@ -4,14 +4,15 @@ from typing import List, TYPE_CHECKING, TextIO
 import numpy as np
 
 import ModularChess.pieces.King as King
-from ModularChess.utils.BasicMovement import BasicMovement
-from ModularChess.utils.Castling import CastlablePiece
+from ModularChess.movements.BasicMovement import BasicMovement
+from ModularChess.movements.Castling import CastlablePiece
+from ModularChess.utils.Exceptions import InvalidMoveException
 
 if TYPE_CHECKING:
     from ModularChess.controller.Board import Board
     from ModularChess.controller.Player import Player
     from ModularChess.pieces.Piece import Piece
-    from ModularChess.utils.Movement import Movement
+    from ModularChess.movements.Movement import Movement
     from ModularChess.utils.Position import Position
 
 
@@ -23,7 +24,7 @@ class Rook(CastlablePiece):
     def find_castling_destination(self, other_piece: "CastlablePiece") -> "Position":
         direction: "Position" = other_piece.position - self.position
         if self.position[~(direction != 0)] != other_piece.position[~(direction != 0)]:
-            raise Exception("Invalid Axis")
+            raise InvalidMoveException("Invalid Axis")
 
         destination: "Position" = self.position + np.ceil(direction / 2).astype(np.int_) + (
             np.floor_divide(np.abs(direction), direction, out=np.zeros_like(direction), where=direction != 0))
@@ -33,13 +34,13 @@ class Rook(CastlablePiece):
         # Checked in King
         return True
 
-    def check_move(self, new_position: "Position") -> List["Movement"]:
+    def check_piece_valid_move(self, new_position: "Position") -> List["Movement"]:
         # Piece didn't move or outside board
-        if super().check_move(new_position) is None:
+        if super().check_piece_valid_move(new_position) is None:
             return []
         return Rook.lineal_check_move(self, new_position)
 
-    def get_valid_moves(self) -> List["Movement"]:
+    def get_piece_valid_moves(self) -> List["Movement"]:
         return Rook.get_rook_valid_moves(self)
 
     @classmethod
@@ -49,9 +50,9 @@ class Rook(CastlablePiece):
 
         for i, max_index in enumerate(piece.board.shape):
             min_iterable = piece.position.create_lineal_path(piece.position.copy_and_replace(i, 0))
-            moves += [BasicMovement(piece, pos) for pos in piece.__can_move_to__(min_iterable)]
+            moves += [BasicMovement(piece, pos, is_valid_move=True) for pos in piece.__can_move_to__(min_iterable)]
             max_iterable = piece.position.create_lineal_path(piece.position.copy_and_replace(i, max_index))
-            moves += [BasicMovement(piece, pos) for pos in piece.__can_move_to__(max_iterable)]
+            moves += [BasicMovement(piece, pos, is_valid_move=True) for pos in piece.__can_move_to__(max_iterable)]
 
         return moves
 
@@ -67,13 +68,13 @@ class Rook(CastlablePiece):
             return []
 
         # Checks pieces in the path
-        if any(list(piece.board[pos] for pos in piece.position.create_lineal_path(new_position))[:-1]):
+        if any([piece.board[pos] for pos in piece.position.create_lineal_path(new_position)][:-1]):
             return []
 
         # Checks if destination is not empty or there is an enemy piece
         if not piece.board.can_capture_or_move(piece, new_position):
             return []
-        return [BasicMovement(piece, new_position)]
+        return [BasicMovement(piece, new_position, is_valid_move=True)]
 
     @staticmethod
     def piece_unicode() -> str:
@@ -86,3 +87,7 @@ class Rook(CastlablePiece):
     @staticmethod
     def image() -> TextIO:
         return open(os.path.join(Rook.res_path, "Rook.png"))
+
+    @staticmethod
+    def piece_value() -> float:
+        return 5
